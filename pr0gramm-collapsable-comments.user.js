@@ -26,7 +26,10 @@ function debounce(func, timeout = 300) {
       , themeColor = '#ee4d2e'
       , collapserClass = 'comment-collapser'
       , collapserInnerClass = 'comment-collapser-inner'
-      , collapsedClass = 'is-collapsed';
+      , collapsedClass = 'is-collapsed'
+      , collapseProgressClass = 'is-expanding';
+
+   let timeout;
 
    // insert styles
    const $styles = document.createElement('style');
@@ -37,8 +40,12 @@ function debounce(func, timeout = 300) {
          transition: height .3s ease;
       }
 
+      ${blockId}:not(.${collapseProgressClass}):not(.${collapsedClass}) {
+         height: auto!important;
+      }
+
       ${blockId}.${collapsedClass} > ${containerId} > ${blockId}:first-child ${commentId}:after {
-         content: '...';
+         content: '';
          text-align: center;
          display: block;
          width: 100%;
@@ -47,6 +54,10 @@ function debounce(func, timeout = 300) {
          opacity: .5;
          font-size: 16px;
          line-height: 1;
+      }
+
+      ${blockId}.${collapsedClass}:not(.${collapseProgressClass}) > ${containerId} > ${blockId}:first-child ${commentId}:after {
+         content: '...';
       }
 
       ${containerId} {
@@ -98,11 +109,11 @@ function debounce(func, timeout = 300) {
          // does not require collapsable when no comments
          if (!$cb) return;
 
-         const originalHeight = $el.clientHeight
-            , commentHeight = $el.querySelector(commentId).clientHeight
+         const commentHeight = $el.querySelector(commentId).clientHeight
             , firstChildCommentHeight = $cb.querySelector(blockId).querySelector(commentId).clientHeight;
 
-         let expanded = true;
+         let expanded = true
+            , originalHeight = $el.clientHeight;
 
          const $clickable = document.createElement('div');
          const $clickableStripe = document.createElement('div');
@@ -118,10 +129,23 @@ function debounce(func, timeout = 300) {
          // click: expand or collapse
          $clickable.addEventListener('click', () => {
             expanded = !expanded;
-            $el.style.height = expanded ? originalHeight + 'px' : (commentHeight + firstChildCommentHeight + 32 + 'px');
+
+            // update OG height when not collapsed
+            if (!expanded) originalHeight = $el.clientHeight;
+
+            $el.classList.add([ collapseProgressClass ]);
+
+            // add class slightly later
+            window.setTimeout(() => $el.style.height = expanded ? originalHeight + 'px' : (commentHeight + firstChildCommentHeight + 32 + 'px'), 10);
 
             if (!expanded) $el.classList.add([ collapsedClass ]);
             else $el.classList.remove([ collapsedClass ]);
+
+            // set timer based transition classes
+            window.clearTimeout(timeout);
+            window.setTimeout(() => {
+               $el.classList.remove([ collapseProgressClass ]);
+            }, 310);
          });
 
          // insert clickable
