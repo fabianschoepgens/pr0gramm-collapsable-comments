@@ -50,14 +50,19 @@ function debounce(func, timeout = 300) {
          display: block;
          width: 100%;
          max-width: 532px;
-         height: 16px;
-         opacity: .5;
+         font-weight: 700;
          font-size: 16px;
          line-height: 1;
+         height: 0;
+         color: #666;
+         padding-bottom: 0;
+         transition: all .3s ease;
       }
 
       ${blockId}.${collapsedClass}:not(.${collapseProgressClass}) > ${containerId} > ${blockId}:first-child ${commentId}:after {
          content: '...';
+         height: 16px;
+         padding-bottom: 16px;
       }
 
       ${containerId} {
@@ -138,7 +143,7 @@ function debounce(func, timeout = 300) {
             $el.classList.add([ collapseProgressClass ]);
 
             // add class slightly later
-            window.setTimeout(() => $el.style.height = expanded ? originalHeight + 'px' : (commentHeight + firstChildCommentHeight + 32 + 'px'), 10);
+            window.setTimeout(() => $el.style.height = expanded ? originalHeight + 'px' : (commentHeight + firstChildCommentHeight + 48 + 'px'), 10);
 
             if (!expanded) $el.classList.add([ collapsedClass ]);
             else $el.classList.remove([ collapsedClass ]);
@@ -148,6 +153,13 @@ function debounce(func, timeout = 300) {
             window.setTimeout(() => {
                $el.classList.remove([ collapseProgressClass ]);
             }, 310);
+
+            // scroll to top of comment
+            $el.querySelector(commentId).scrollIntoView({
+               behavior: "smooth",
+               block: "nearest",
+               inline: "start"
+            });
          });
 
          // insert clickable
