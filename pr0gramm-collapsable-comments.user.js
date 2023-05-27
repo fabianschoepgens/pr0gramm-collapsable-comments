@@ -92,13 +92,15 @@ function debounce(func, timeout = 300) {
 
    // initial load
    // TODO: Find proper way to insert the script
-   const tt = window.setInterval(() => {
+   const includeWhenReady = () => {
       const $blocks = document.querySelectorAll(blockId);
       if (!$blocks.length) return;
 
       window.clearInterval(tt);
       main();
-   }, 1000);
+   };
+
+   const tt = window.setInterval(includeWhenReady, 1000);
 
    const main = () => {
       const $blocks = document.querySelectorAll(blockId);
@@ -158,12 +160,12 @@ function debounce(func, timeout = 300) {
    const oldNavigationCode = p.navigateTo.toString();
    p.navigateTo = (...a) => {
       eval(`(${oldNavigationCode}.bind(p))(${a.map(b => JSON.stringify(b)).join(',')})`);
-      main();
+      includeWhenReady();
    };
    p.navigateTo.bind(p);
 
    // history: via popstate event
-   window.addEventListener('popstate', main);
+   window.addEventListener('popstate', includeWhenReady);
 
    // resizing must redo the script as well
    window.addEventListener('resize', debounce(main, 300));
